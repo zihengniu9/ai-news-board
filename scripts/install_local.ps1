@@ -6,8 +6,11 @@ Set-Location -LiteralPath $repo
 
 # 1. Python environment (standard library only, nothing to install).
 $venvPython = Join-Path $repo '.venv\Scripts\python.exe'
-if (-not (Test-Path -LiteralPath $venvPython)) { py -3 -m venv .venv }
-if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $venvPython)) { throw 'Python 环境创建失败' }
+if (-not (Test-Path -LiteralPath $venvPython)) {
+    py -3 -m venv .venv
+    if ($LASTEXITCODE -ne 0) { throw 'Python 环境创建失败' }
+}
+if (-not (Test-Path -LiteralPath $venvPython)) { throw '未找到 Python 环境' }
 $pythonw = Join-Path $repo '.venv\Scripts\pythonw.exe'
 
 # 2. .env: carry over the three local settings from the old project folder if this repo has none.
