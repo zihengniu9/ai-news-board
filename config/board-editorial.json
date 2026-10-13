@@ -1,0 +1,68 @@
+{
+  "https://cursor.com/changelog/remote-control-local-agents": {
+    "evidenceHash": "f7699d720f7ebef6d894ff1844a881ddbbb34fa73ff8553ccc0a2c8c696bdbee",
+    "title": "Cursor 支持用 iPhone 远程回复本机 Agent",
+    "summary": "可在 Cursor iOS 应用中查看并回复电脑上运行的本地 Agent。",
+    "angle": "做一次离开电脑后的任务接续演示，核对设备、版本和运行条件。"
+  },
+  "https://cursor.com/changelog/rollouts-and-security-reviewer": {
+    "evidenceHash": "c9b5ba92e443de07fd9d3c9f1c499e15fd79fc024f2ecd5b26392d0ba14193a0",
+    "title": "Cursor 新增部署跟踪与安全审查工具",
+    "summary": "Rollouts 跟踪部署健康状态，Security Review 报告可被利用的漏洞。",
+    "angle": "先展示普通开发者实际会遇到的问题，再对照工具输出。"
+  },
+  "https://blog.google/innovation-and-ai/technology/ai/playground-experimental-gaming-platform/": {
+    "evidenceHash": "ff1cb5e0136e3e6296a360ad8ca775e29e33c9401368ff84d2a0dcb7d956babe",
+    "title": "Google 推出 Playground：创建和分享自定义游戏",
+    "summary": "官方介绍这是一款实验性游戏平台，可创建、游玩和分享自定义游戏。",
+    "angle": "尝试从一个简单想法做出可玩的游戏，记录时间、门槛与限制。"
+  },
+  "https://blog.google/innovation-and-ai/technology/research/google-beam-expansion/": {
+    "evidenceHash": "232153030dd6d202ff148df97c9b4905e90e7c25fe737cb7909daadb40c0f7ff",
+    "title": "Google Beam 扩展地区与合作网络",
+    "summary": "Google 宣布 Beam 向五个新国家扩展，并与 Industrious 合作扩大网络。",
+    "angle": "先判断普通读者能否使用，再决定是否值得做体验介绍。"
+  },
+  "https://blog.google/innovation-and-ai/technology/ai/google-un-data-commons-platform/": {
+    "evidenceHash": "57af2e2735d8714cab2968fd9b7f28c0f0ead3924571da56f8057710738c8023",
+    "title": "Google 与联合国推出开放数据平台",
+    "summary": "UN System Data Commons 将全球统计数据整理为可搜索的开放平台。",
+    "angle": "从科研选题找数据出发，演示如何找到可引用的统计资料。"
+  },
+  "https://huggingface.co/blog/tiiuae/falcon-asr": {
+    "evidenceHash": "bce7986f4c4cc503ba1c01df4ea1a412ad05abb3c4cae92edf722221fd0463cd",
+    "title": "Falcon ASR 发布介绍",
+    "summary": "Hugging Face 上的 TII 发布方文章介绍 Falcon ASR；具体能力需继续阅读原文并实测。",
+    "angle": "核对支持语言、部署要求与授权后，再考虑语音转写教程。"
+  },
+  "https://openai.com/index/teens-learn-and-plan": {
+    "evidenceHash": "add8f667a05521a541af0221447d391f86dd0db7a7e57b2aefebeedcdcc074f9",
+    "title": "ChatGPT 青少年版预告大学申请规划工具",
+    "summary": "官方介绍即将推出 College Planner，并提及闪卡、测验和青少年 AI 委员会。",
+    "angle": "先核对推出时间与适用年龄，避免把预告写成全面可用。"
+  },
+  "https://openai.com/index/gpt-6-for-everyone": {
+    "evidenceHash": "24bdcac0d721afca8143d3e64c64967bba0574689c229c8825ac2bc148f4d816",
+    "title": "GPT-6 与交互式界面向 ChatGPT 用户推出",
+    "summary": "官方称正在全球推出 GPT-6 与 Intelligent UI，提供视觉化与交互体验。",
+    "angle": "用相同任务对比交互变化，记录不同账号的可用情况。"
+  },
+  "https://openai.com/index/introducing-gpt-6-1-sol": {
+    "evidenceHash": "4a216f3649a8bf642fc5ef42063140e8849e52eb560b4a10d658a241cbb5dec5",
+    "title": "OpenAI 发布 GPT-6.1 Sol",
+    "summary": "官方将其定位于编程、电脑操作及专业工作，并公布与 Astra 的 API 价格对比。",
+    "angle": "实测一个日常任务，分别记录完成度、耗时和实际费用。"
+  },
+  "https://openai.com/index/introducing-dots": {
+    "evidenceHash": "a288697ef27219863d6502cf846bef6bab37ced728b3a0bcd14265e5a74cf3e1",
+    "title": "OpenAI 介绍主动式助手 dots",
+    "summary": "官方介绍 dots 可围绕复杂项目与日常任务持续工作。",
+    "angle": "挑选一个跨步骤任务，看看接续工作需要哪些设置。"
+  },
+  "https://openai.com/index/introducing-gpt-6-sol-and-luna": {
+    "evidenceHash": "d42461aa4619ed4896f94ec48e884aee3b1df486ceb04a34166c6f69dc6144e9",
+    "title": "OpenAI 发布 GPT-6 Sol 和 Luna",
+    "summary": "官方介绍两种在能力和成本之间采用不同取舍的模型。",
+    "angle": "按常见任务做选择表，优先回答什么人需要哪一种。"
+  }
+}

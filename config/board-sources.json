@@ -1,0 +1,67 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI News",
+    "url": "https://openai.com/news/rss.xml",
+    "kind": "rss",
+    "category": "模型更新"
+  },
+  {
+    "id": "google",
+    "name": "Google AI",
+    "url": "https://blog.google/technology/ai/rss/",
+    "kind": "rss",
+    "category": "产品更新"
+  },
+  {
+    "id": "github",
+    "name": "GitHub AI & ML",
+    "url": "https://github.blog/ai-and-ml/feed/",
+    "kind": "rss",
+    "category": "编程工具"
+  },
+  {
+    "id": "huggingface",
+    "name": "Hugging Face",
+    "url": "https://huggingface.co/blog/feed.xml",
+    "kind": "rss",
+    "category": "开源工具"
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "url": "https://cursor.com/changelog",
+    "kind": "cursor",
+    "category": "编程工具"
+  },
+  {
+    "id": "anthropic",
+    "name": "Anthropic",
+    "url": "https://www.anthropic.com/news",
+    "kind": "anthropic",
+    "category": "模型更新"
+  },
+  {
+    "id": "mlh",
+    "name": "MLH Global Hack Week",
+    "url": "https://ghw.mlh.com/",
+    "kind": "mlh-index",
+    "category": "活动福利"
+  },
+  {
+    "id": "mlh-events",
+    "name": "MLH 活动报名",
+    "url": "https://events.mlh.com/events/14553",
+    "kind": "mlh-event",
+    "category": "活动福利"
+  },
+  {
+    "id": "mlh-challenge",
+    "name": "MLH 官方挑战",
+    "url": "https://www.mlh.com/events/global-hack-week-open-source-90/challenges/01a11d20-ae76-fc13-f55f-3f3158847e88",
+    "kind": "mlh-challenge",
+    "category": "活动福利",
+    "parentUrl": "https://events.mlh.com/events/14553",
+    "eventSlug": "global-hack-week-open-source-90"
+  }
+]

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>消息台 · AI 选题看板</title>
+  <link rel="stylesheet" href="editorial-v2.css">
+  <link rel="stylesheet" href="heat.css">
+  <script defer src="media-data.js"></script>
+  <script defer src="heat-math.js"></script>
+  <script defer src="heat.js"></script>
+  <script defer src="board-data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">跳到消息列表</a>
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="消息台首页"><small>ACADEMIC MONOGRAPH</small><strong>消息台</strong><small>EDITORIAL DESK ARCHIVE</small></a>
+    <div class="workspace-label">个人选题工作台</div>
+    <nav aria-label="主导航" id="navigation"></nav>
+    <div class="sidebar-bottom">
+      <button class="source-nav" id="sourceButton"><span data-icon="globe"></span>信息来源<span data-icon="arrow-up-right"></span></button>
+      <div class="preview-note" id="connectionNote">正在读取采集记录</div>
+      <div class="profile"><span>我的工作台<small>DESK ARCHIVE · LOCAL</small></span><span class="profile-edition">ED.02</span></div>
+    </div>
+  </aside>
+  <div class="app">
+    <header class="topbar"><div class="breadcrumb">工作台 <span>/</span> <strong id="crumb">消息总览</strong></div><div class="topbar-right"><span class="snapshot-date">PREVIEW / 2026.10.13</span><span class="user-stamp" aria-label="个人工作台"><span data-icon="user"></span></span></div></header>
+    <main id="main">
+      <section class="page-heading"><div><div class="eyebrow"><span>EDITORIAL RADAR</span><i>·</i>留意变化，找到下一个选题</div><div class="heading-title"><h1 id="pageTitle">AI 消息看板</h1><span class="desk-badge">CURATED<br>DESK</span></div><div class="heading-subtitle"><p id="pageSubtitle">产品更新与最新活动，放在一处看。</p><span>AI NEWS &amp; EVENTS</span></div></div><button class="button primary" id="exportButton"><span data-icon="download"></span>导出选题清单</button></section>
+      <div class="sync-bar"><div><strong id="syncStatus">读取采集记录</strong><span id="syncTime"></span></div><button class="button secondary" id="refreshButton">刷新消息</button></div>
+      <section class="overview-stats" aria-label="消息统计" id="statistics"></section>
+      <section id="heatPanel" hidden aria-label="媒体话题热度"></section>
+      <section class="desk-layout"><div class="desk-primary"><section class="feature-grid" id="features" aria-label="优先关注">
+        <article class="featured">
+          <div class="feature-content"><div class="feature-copy"><div class="featured-heading"><span class="label warm">限时关注</span><span class="feature-date">10.09 — 10.15 EDT</span><span class="feature-source">MLH 官方挑战</span></div><h2>Cursor Pro 活动兑换</h2><p>报名、签到、邮件收码，再到 Cursor 兑换。赠送时长与发码资格仍需核对。</p><div class="feature-bottom"><button class="button primary" data-open="cursor-mlh">查看参与条件<span data-icon="arrow-right"></span></button><span class="feature-note">活动结束与兑换期限分开核对</span></div></div><div class="feature-art" aria-hidden="true"><span class="dispatch-kicker">DISPATCH<br>BRIEF</span><strong>PRO PASS</strong><span class="dispatch-note">资格核验中</span><span class="dispatch-foot">SOURCE NOTE</span></div></div>
+        </article>
+      </section>
+      <section class="feed-layout">
+        <div class="feed-main">
+          <div class="feed-heading"><h2 id="feedTitle">全部消息 <span id="resultCount"></span></h2><label class="sort-control">排序<select id="sort"><option value="priority">优先关注</option><option value="latest">最新发布</option><option value="deadline">活动截止</option></select></label><label class="search"><span data-icon="search"></span><input type="search" id="search" placeholder="搜索产品、活动或关键词" aria-label="搜索消息"><kbd>/</kbd></label></div>
+          <div class="toolbar"><div class="tabs" role="tablist" aria-label="消息类型" id="tabs"></div></div>
+          <div class="filter-row"><div class="filter-chips" id="categoryFilters"></div><label class="range-control"><span data-icon="filter"></span><select id="range" aria-label="时间范围"><option value="all">当前消息</option><option value="week">近 7 天发布</option><option value="month">近 30 天发布</option><option value="archive">已归档</option></select></label></div>
+          <div class="list-caption" id="listCaption">官方事实与选题判断分开呈现 · 点击标题查看详情</div>
+          <div class="news-list" id="newsList" aria-live="polite"></div>
+        </div></section></div>
+        <aside class="right-rail" aria-label="活动时间与选题笔记">
+          <article class="dates-card"><div class="section-top"><span data-icon="calendar"></span><h2>接下来，留意这些时间</h2><span class="mono-caption">DEADLINES</span></div><div class="date-item"><span class="date-stamp"><b>15</b>10月</span><div><strong>MLH 本期活动结束</strong><span class="tag orange">临近结束</span><p>美东 10/15 13:00</p></div></div><div class="date-item"><span class="date-stamp"><b>06</b>11月</span><div><strong>Builders Week 开始</strong><p>关注新一期活动条件</p></div></div><div class="dates-foot">活动截止与兑换码有效期分开记录</div></article>
+          <section class="rail-card topics-card"><div class="section-top"><div><h2>我的工作台</h2><span class="mono-caption">DESK ARCHIVE · LOCAL</span></div><span class="counter" id="savedCounter">0</span></div><div id="topicPreview"></div><button class="rail-link" data-view="saved">打开选题清单<span data-icon="arrow-right"></span></button></section>
+          <section class="rail-card editorial-card"><div class="eyebrow">EDITORIAL RUBRIC</div><h2>筛选时，先看这三件事</h2><p class="rubric-intro">这条消息，值得做吗？</p><div class="editorial-line"><span>01</span><div><strong>读者能得到什么</strong><p>能省钱、能完成任务，或有明确的新用途。</p></div></div><div class="editorial-line"><span>02</span><div><strong>普通人能参与吗</strong><p>资格、地区、费用和操作门槛是否清楚。</p></div></div><div class="editorial-line"><span>03</span><div><strong>能留下什么参考</strong><p>步骤、对照表、模板，给读者回看的理由。</p></div></div></section>
+          <div class="rail-foot"><span>FIELD NOTES · 2026.10.13</span><p>保留消息来源，记下判断。<br>未提供的条件保留为“未公布”。</p></div>
+        </aside>
+      </section>
+      <footer class="page-footer"><span>EDITORIAL DESK · AI NEWS &amp; EVENTS · PERSONAL ARCHIVE</span><span>设计预览包含 8 条手动核验样本 · 自动采集待接入</span></footer>
+    </main>
+  </div>
+  <dialog id="detailDialog" class="detail-dialog" aria-labelledby="detailTitle"><div id="detailContent"></div></dialog>
+  <dialog id="sourcesDialog" class="sources-dialog" aria-labelledby="sourcesTitle"><div class="dialog-top"><div><div class="eyebrow">来源与采集状态</div><h2 id="sourcesTitle">信息从哪里来</h2></div><button class="icon-button" data-close="sourcesDialog" aria-label="关闭来源说明"><span data-icon="x"></span></button></div><p class="dialog-intro">每条消息保留原文、发布时间与采集时间。抓取成功代表读到了源文，产品能力、参与资格和权益仍需核对。Hugging Face 也包含发布方及社区文章。</p><div id="sourceList"></div><div class="source-policy">相同链接更新原记录，保留历史版本。失败来源保留上次成功内容并标记；未知期限不猜测。每 4 小时自动采集，支持手动刷新；电脑需开机、用户已登录且 TUN 可用。</div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

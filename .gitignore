@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+state/
+data/
+backups/
+# Generated on each run (locally or in Actions); never committed.
+site/board-data.js
+site/media-data.js
+site/*.tmp

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "techcrunch",
+    "name": "TechCrunch AI",
+    "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+    "kind": "rss",
+    "category": "媒体报道"
+  },
+  {
+    "id": "verge",
+    "name": "The Verge AI",
+    "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+    "kind": "rss",
+    "category": "媒体报道"
+  },
+  {
+    "id": "wired",
+    "name": "WIRED AI",
+    "url": "https://www.wired.com/feed/tag/ai/latest/rss",
+    "kind": "rss",
+    "category": "媒体报道"
+  },
+  {
+    "id": "mit",
+    "name": "MIT Technology Review",
+    "url": "https://www.technologyreview.com/feed/",
+    "kind": "rss",
+    "category": "媒体报道"
+  },
+  {
+    "id": "qbitai",
+    "name": "量子位",
+    "url": "https://www.qbitai.com/feed",
+    "kind": "rss",
+    "category": "媒体报道"
+  },
+  {
+    "id": "jiqizhixin",
+    "name": "机器之心",
+    "url": "https://www.jiqizhixin.com/articles",
+    "kind": "rss",
+    "category": "媒体报道",
+    "enabled": false,
+    "disabledReason": "原 RSS 已跳转为非订阅页面；官方文章库需要动态加载，尚未确认可用的公开订阅。暂停采集，避免反复报错。"
+  }
+]

@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const H=require('../site/heat-math.js');
+const now=Date.parse('2026-10-13T04:00:00Z');
+const article=(title,brand,date,url)=>({title,brand,date,url,sourceId:brand});
+const topic=[{id:'agent',name:'Agents',terms:['AI agent']}];
+let data={articles:[article('AI agent launches','A','2026-10-12T06:00:00Z','https://a.org/1'),article('AI agent launches','B','2026-10-12T06:00:00Z','https://b.org/1'),article('AI agent old news','A','2026-10-11T05:00:00Z','https://a.org/2'),article('AI agent unknown date','A',null,'https://a.org/3'),article('AI agent future','A','2026-10-14T00:00:00Z','https://a.org/4')],comparisonReady:false};
+let t=H.summarize(data,topic,24,now)[0];
+assert.equal(t.count,1);assert.equal(t.media.length,2);assert.equal(t.unknown,1);assert.equal(t.delta,null);assert.equal(t.reports[0].links.length,2);
+assert.equal(H.matches('chair and metaphor','AI'),false);assert.equal(H.matches('C++ tools','C++'),true);
+data={...data,comparisonReady:true,comparisonSources:['A','B'],snapshot:'2026-10-13T04:00:00Z'};
+t=H.summarize(data,topic,24,now)[0];assert.deepEqual(t.delta,{current:1,previous:1,difference:0,percent:0});
+data.articles=data.articles.filter(a=>!a.title.includes('old'));
+assert.equal(H.summarize(data,topic,24,now)[0].delta.percent,null);
+assert.equal(H.summarize(data,topic,24,now+7*3600000)[0].delta,null);
+assert.equal(H.summarize(data,topic,24,now)[0].trend.length,7);
+console.log('PASS: duplicate titles, publisher coverage, unknown/future dates, literal keywords, history gates, zero baseline');
