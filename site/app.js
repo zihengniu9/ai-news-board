@@ -407,6 +407,7 @@
   changeView(location.hash.slice(1) || 'overview', false);
   if(localMode) readServer().then(data=>{if(data.refresh.running) waitRefresh().catch(error=>toast(error.message));}).catch(()=>toast('本地服务不可用，正在显示上次保存的采集快照'));
   async function updateHealth() {
+    if(hostedMode && !document.hidden) { renderLive(); return; }
     if(!localMode || document.hidden) return;
     try {
       const response=await fetch('/api/status',{cache:'no-store'});
@@ -418,7 +419,7 @@
       renderLive();
     } catch (_) { /* Keep the last recorded status if the local service is unavailable. */ }
   }
-  if(localMode) {
+  if(localMode || hostedMode) {
     setInterval(updateHealth,60000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden) updateHealth();});
   }
