@@ -25,7 +25,7 @@ class ServerTests(unittest.TestCase):
             result=conn.getresponse();status=result.status;body=result.read();conn.close()
             return status,json.loads(body)
         try:
-            with patch.object(module,'refresh',side_effect=lambda:gate.wait(3)) as collect:
+            with patch.object(module,'refresh',side_effect=lambda:gate.wait(3)) as collect, patch.object(module.time,'monotonic',return_value=1.0), patch.object(module,'LAST_START',float('-inf')):
                 self.assertEqual(request('GET','/api/status',{'Host':'evil.example'})[0],403)
                 self.assertEqual(request('POST','/api/refresh',{'Origin':'https://evil.example','X-Board-Token':module.TOKEN})[0],403)
                 self.assertEqual(request('POST','/api/refresh',{'Origin':'http://'+host})[0],403)

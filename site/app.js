@@ -321,6 +321,7 @@
   const localMode = location.protocol==='http:' && ['127.0.0.1','localhost'].includes(location.hostname);
   // Published copy (GitHub Pages): data is rebuilt by the scheduled cloud job; there is no refresh endpoint.
   const hostedMode = location.protocol==='https:';
+  if(hostedMode) $('.source-policy').textContent='相同链接更新原记录，保留历史版本。失败来源保留上次成功内容并标记；未知期限不猜测。GitHub Actions 每 4 小时自动采集，不依赖本机开机；运行结果和原始记录可在仓库 Actions 查看。';
   const humanTime = value => value ? new Date(value).toLocaleString('zh-CN',{timeZone:'Asia/Singapore',hour12:false}) : '未记录';
   // Scheduled-collection health: flag when no successful automatic run within staleAfterHours.
   function scheduleLine(sch) {

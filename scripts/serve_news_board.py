@@ -19,7 +19,7 @@ PORT=8766
 TOKEN=secrets.token_urlsafe(32)
 LOCK=threading.Lock()
 STATE={'running':False,'lastError':None,'lastFinished':None}
-LAST_START=0.0
+LAST_START=float('-inf')
 
 
 def perform_refresh(media=False):
