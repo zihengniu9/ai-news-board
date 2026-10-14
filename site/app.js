@@ -58,7 +58,7 @@
   const state = { view: 'overview', type: 'all', category: '全部', query: '', range: 'all', sort: 'priority', company:'all', content:'curated', kind:'all' };
   const views = {
     overview: { label:'消息总览', title:'AI 消息看板', subtitle:'产品更新与最新活动，放在一处看。', feed:'全部消息', icon:'grid' },
-    companies: { label:'公司追踪', title:'AI 公司追踪', subtitle:'关注公司的新功能、模型与可参与活动，集中查看。', feed:'相关产品与活动', icon:'globe' },
+    companies: { label:'公司追踪', title:'AI 公司追踪', subtitle:'按公司查看新功能、模型发布与可参与活动。', feed:'相关产品与活动', icon:'globe' },
     release: { label:'产品发布', title:'产品发布', subtitle:'看看新变化，再决定值得为谁做一期。', feed:'产品更新', icon:'box' },
     event: { label:'活动福利', title:'活动与福利', subtitle:'先核对资格、权益和时间，再整理参与攻略。', feed:'活动消息', icon:'calendar' },
     heat: { label:'话题热度', title:'媒体话题热度', subtitle:'看看哪些话题被反复报道，找到值得跟进的切入点。', feed:'媒体话题', icon:'globe' },
@@ -155,7 +155,7 @@
   }
   function renderNavigation() {
     $('#navigation').innerHTML = Object.entries(views).map(([id,view]) => {
-      const count = id === 'companies' ? preferences.followed.length : id === 'heat' ? (window.MEDIA_DATA?.sources || []).filter(s=>s.status==='ok').length : id === 'saved' ? stored.selected.length : id === 'overview' ? currentItems().length : currentItems().filter((item) => item.type === id).length;
+      const count = id === 'companies' ? C.companies.length : id === 'heat' ? (window.MEDIA_DATA?.sources || []).filter(s=>s.status==='ok').length : id === 'saved' ? stored.selected.length : id === 'overview' ? currentItems().length : currentItems().filter((item) => item.type === id).length;
       return (id === 'saved' ? '<div class="nav-divider"></div>' : '') + '<button class="nav-item' + (state.view === id ? ' active' : '') + '" data-view="' + id + '"' + (state.view === id ? ' aria-current="page"' : '') + '>' + icon(view.icon) + esc(view.label) + '<span class="nav-count">' + count + '</span></button>';
     }).join('');
   }
@@ -178,8 +178,7 @@
   }
   function renderCuration() {
     const active=items.filter(i=>!archived(i)), hidden=active.filter(i=>policy(i).hidden).length;
-    $('#companyOverview').innerHTML='<div><span class="eyebrow">COMPANY WATCH</span><h2>关注公司，少看杂讯</h2><p>已关注 '+preferences.followed.length+' 家 · 当前 '+hidden+' 条消息已过滤</p></div><button class="button secondary" data-view="companies">查看公司动态 '+icon('arrow-right')+'</button>';
-    $('#companySelect').innerHTML='<option value="all">全部公司</option><option value="followed">只看我关注的公司</option>'+C.companies.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');
+    $('#companySelect').innerHTML='<option value="all">全部公司</option>'+C.companies.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');
     $('#companySelect').value=state.company;
     $('#contentMode').value=state.content;
     $('#signalKind').value=state.kind;
@@ -187,20 +186,17 @@
     $('#filterSummary').textContent='当前消息中已过滤 '+hidden+' 条；收藏和笔记保留。偏好仅保存在当前浏览器。';
     $('#keywordList').innerHTML=preferences.keywords.map((k,i)=>'<button class="filter-chip" data-remove-keyword="'+i+'" aria-label="移除屏蔽词 '+esc(k)+'">'+esc(k)+' ×</button>').join('')||'<span class="muted">尚未设置屏蔽词</span>';
     if(state.view!=='companies')return;
-    const now=snapshot.valueOf(), rawMedia=window.MEDIA_DATA?.articles||[];
+    const now=snapshot.valueOf();
     const officialWeek=C.recent(items,now).filter(i=>!policy(i).hidden);
-    const mediaWeek=C.recent(rawMedia,now).filter(i=>!policy(i).hidden);
     const sourceList=window.BOARD_SOURCES||[];
-    const ordered=[...C.companies].sort((a,b)=>Number(preferences.followed.includes(b.id))-Number(preferences.followed.includes(a.id)));
-    const cards=ordered.map(c=>{
-      const official=officialWeek.filter(i=>C.companyIds(i).includes(c.id)),media=mediaWeek.filter(i=>C.companyIds(i).includes(c.id));
-      const last=[...official,...media].sort((a,b)=>Date.parse(b.date)-Date.parse(a.date))[0];
+    const cards=C.companies.map(c=>{
+      const official=officialWeek.filter(i=>C.companyIds(i).includes(c.id));
+      const last=[...official].sort((a,b)=>Date.parse(b.date)-Date.parse(a.date))[0];
       const connected=sourceList.filter(s=>c.sources.includes(s.id));
-      const coverage=connected.length?connected.map(s=>s.name+'：'+(s.state||s.status||'状态待核对')+' · '+humanTime(s.checkedAt)).join('；'):'未接入独立产品源 · 仅跟踪现有报道';
-      return '<article class="company-card '+(state.company===c.id?'selected':'')+'"><div class="company-card-head"><button class="company-name" data-company="'+c.id+'">'+esc(c.name)+'</button><button class="follow-company" data-follow-company="'+c.id+'" aria-pressed="'+preferences.followed.includes(c.id)+'">'+(preferences.followed.includes(c.id)?'已关注':'关注')+'</button></div><div class="company-numbers"><span><b>'+official.length+'</b>产品 / 活动</span><span><b>'+media.length+'</b>媒体报道</span></div><p class="coverage">'+esc(coverage)+'</p><p class="company-latest">'+(last?esc(last.title):'近 7 天未采集到符合条件的消息')+'</p></article>';
+      const coverage=connected.length?connected.map(s=>s.name+'：'+(s.state||s.status||'状态待核对')+' · '+humanTime(s.checkedAt)).join('；'):'尚未接入独立产品源';
+      return '<article class="company-card '+(state.company===c.id?'selected':'')+'"><div class="company-card-head"><button class="company-name" data-company="'+c.id+'">'+esc(c.name)+'</button></div><div class="company-numbers"><span><b>'+official.length+'</b>产品 / 活动</span></div><p class="coverage">'+esc(coverage)+'</p><p class="company-latest">'+(last?esc(last.title):'近 7 天未采集到符合条件的消息')+'</p></article>';
     }).join('');
-    const media=C.unique(rawMedia).filter(i=>companyMatches(i)&&(state.kind==='all'||policy(i).kind===state.kind)&&(state.content==='all'||(state.content==='filtered'?policy(i).hidden:!policy(i).hidden))).filter(i=>i.date&&Date.parse(i.date)<=now&&Date.parse(i.date)>now-7*86400000).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
-    $('#companyPanel').innerHTML='<div class="company-heading"><h2>重点公司关注表</h2><p>近 7 天 · 只统计通过过滤的已采集消息。按关注顺序展示，非热度排名；0 不代表没有发布。</p></div><div class="company-grid">'+cards+'</div><details class="company-reports" open><summary>相关媒体报道 · 近 7 天（'+media.length+' 条）</summary><p class="muted">跟随上方公司、内容和过滤筛选。报道按原文链接去重，标题关键词匹配公司；同一报道可涉及多家公司。完整媒体热度统计仍保留原始样本。</p>'+media.map(i=>'<article class="company-report">'+curationCard(i)+'<a href="'+esc(/^https:\/\//i.test(i.url)?i.url:'#')+'" target="_blank" rel="noopener noreferrer">'+esc(i.title)+' ↗</a><small>'+esc(i.brand)+' · '+esc(humanTime(i.date))+(i.stale?' · 来源本轮失败，保留旧记录':'')+'</small></article>').join('')+(!media.length?'<p>此条件下没有采集到媒体报道。可切换公司或查看已过滤消息。</p>':'')+'</details>';
+    $('#companyPanel').innerHTML='<div class="company-heading"><h2>公司动态</h2><p>近 7 天 · 新功能、模型发布与可参与活动。0 表示未采集到符合条件的消息。</p></div><div class="company-grid">'+cards+'</div>';
   }
   function renderSaveButton(item, detail = false) {
     const saved = isSaved(item.id);
@@ -243,7 +239,6 @@
     $('#feedTitle').firstChild.textContent = view.feed + ' ';
     $('#features').hidden = state.view !== 'overview' || state.content!=='curated' || state.company!=='all' || state.kind!=='all';
     $('#companyPanel').hidden=state.view!=='companies';
-    $('#companyOverview').hidden=state.view!=='overview';
     $('#curationControls').hidden=state.view==='saved';
     $('#statistics').hidden = state.view === 'saved' || state.view === 'heat';
     $('.desk-layout').hidden = state.view === 'heat';
@@ -341,11 +336,6 @@
       render();
     }
     else if (button.dataset.company) { state.company=button.dataset.company;state.content='curated';render(); }
-    else if (button.dataset.followCompany) {
-      const id=button.dataset.followCompany;
-      preferences.followed=preferences.followed.includes(id)?preferences.followed.filter(v=>v!==id):[...preferences.followed,id];
-      savePreferences();render();
-    }
     else if (button.dataset.hideItem) {
       const id=button.dataset.hideItem,item=[...items,...(window.MEDIA_DATA?.articles||[])].find(i=>i.id===id);
       if(!item)return;
