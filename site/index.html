@@ -7,13 +7,13 @@
   <title>消息台 · AI 选题看板</title>
   <link rel="stylesheet" href="editorial-v2.css">
   <link rel="stylesheet" href="heat.css">
-  <link rel="stylesheet" href="curation.css">
+  <link rel="stylesheet" href="curation.css?v=20261014-feed">
   <script defer src="media-data.js"></script>
   <script defer src="heat-math.js"></script>
   <script defer src="heat.js"></script>
   <script defer src="board-data.js"></script>
   <script defer src="curation.js"></script>
-  <script defer src="app.js"></script>
+  <script defer src="app.js?v=20261014-feed"></script>
 </head>
 <body>
   <a class="skip" href="#main">跳到消息列表</a>
@@ -47,7 +47,7 @@
           <section id="curationControls" class="curation-controls" aria-label="公司和内容筛选">
             <div class="curation-selects"><label>公司<select id="companySelect"></select></label><label>内容<select id="signalKind"><option value="all">不限类别</option><option value="feature">新功能</option><option value="model">模型发布</option><option value="event">可参与活动</option></select></label><label>显示<select id="contentMode"><option value="curated">精选消息</option><option value="all">全部消息</option><option value="filtered">已过滤 · 可恢复</option></select></label></div>
             <details class="filter-settings"><summary>过滤设置</summary><label class="smart-toggle"><input type="checkbox" id="smartFilter" checked> 默认只保留新功能、模型发布、可参与活动</label><p>自动识别依据标题与更新日志；不确定的消息先隐藏，可逐条恢复。手动恢复优先于自动规则和屏蔽词。关闭自动过滤后，手动隐藏和屏蔽词仍然有效。</p><form id="keywordForm"><label for="muteKeyword">屏蔽关键词</label><div class="keyword-entry"><input id="muteKeyword" maxlength="100" placeholder="例如：招聘（按标题和摘要包含匹配）"><button class="button secondary" type="submit">添加</button></div></form><div id="keywordList" class="keyword-list"></div><p id="filterSummary"></p></details>
-          </section><section id="companyPanel" hidden aria-label="公司追踪"></section>
+          </section>
           <div class="list-caption" id="listCaption">官方事实与选题判断分开呈现 · 点击标题查看详情</div>
           <div class="news-list" id="newsList" aria-live="polite"></div>
         </div></section></div>

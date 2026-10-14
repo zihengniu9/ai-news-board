@@ -155,7 +155,7 @@
   }
   function renderNavigation() {
     $('#navigation').innerHTML = Object.entries(views).map(([id,view]) => {
-      const count = id === 'companies' ? C.companies.length : id === 'heat' ? (window.MEDIA_DATA?.sources || []).filter(s=>s.status==='ok').length : id === 'saved' ? stored.selected.length : id === 'overview' ? currentItems().length : currentItems().filter((item) => item.type === id).length;
+      const count = id === 'companies' ? currentItems().length : id === 'heat' ? (window.MEDIA_DATA?.sources || []).filter(s=>s.status==='ok').length : id === 'saved' ? stored.selected.length : id === 'overview' ? currentItems().length : currentItems().filter((item) => item.type === id).length;
       return (id === 'saved' ? '<div class="nav-divider"></div>' : '') + '<button class="nav-item' + (state.view === id ? ' active' : '') + '" data-view="' + id + '"' + (state.view === id ? ' aria-current="page"' : '') + '>' + icon(view.icon) + esc(view.label) + '<span class="nav-count">' + count + '</span></button>';
     }).join('');
   }
@@ -185,19 +185,8 @@
     $('#smartFilter').checked=preferences.smart;
     $('#filterSummary').textContent='当前消息中已过滤 '+hidden+' 条；收藏和笔记保留。偏好仅保存在当前浏览器。';
     $('#keywordList').innerHTML=preferences.keywords.map((k,i)=>'<button class="filter-chip" data-remove-keyword="'+i+'" aria-label="移除屏蔽词 '+esc(k)+'">'+esc(k)+' ×</button>').join('')||'<span class="muted">尚未设置屏蔽词</span>';
-    if(state.view!=='companies')return;
-    const now=snapshot.valueOf();
-    const officialWeek=C.recent(items,now).filter(i=>!policy(i).hidden);
-    const sourceList=window.BOARD_SOURCES||[];
-    const cards=C.companies.map(c=>{
-      const official=officialWeek.filter(i=>C.companyIds(i).includes(c.id));
-      const last=[...official].sort((a,b)=>Date.parse(b.date)-Date.parse(a.date))[0];
-      const connected=sourceList.filter(s=>c.sources.includes(s.id));
-      const coverage=connected.length?connected.map(s=>s.name+'：'+(s.state||s.status||'状态待核对')+' · '+humanTime(s.checkedAt)).join('；'):'尚未接入独立产品源';
-      return '<article class="company-card '+(state.company===c.id?'selected':'')+'"><div class="company-card-head"><button class="company-name" data-company="'+c.id+'">'+esc(c.name)+'</button></div><div class="company-numbers"><span><b>'+official.length+'</b>产品 / 活动</span></div><p class="coverage">'+esc(coverage)+'</p><p class="company-latest">'+(last?esc(last.title):'近 7 天未采集到符合条件的消息')+'</p></article>';
-    }).join('');
-    $('#companyPanel').innerHTML='<div class="company-heading"><h2>公司动态</h2><p>近 7 天 · 新功能、模型发布与可参与活动。0 表示未采集到符合条件的消息。</p></div><div class="company-grid">'+cards+'</div>';
   }
+
   function renderSaveButton(item, detail = false) {
     const saved = isSaved(item.id);
     return '<button class="' + (detail ? 'button ' + (saved ? 'secondary' : 'primary') : 'save-button' + (saved ? ' saved' : '')) + '" data-save="' + item.id + '" aria-pressed="' + saved + '" aria-label="' + (saved ? '移出选题：' : '加入选题：') + esc(item.title) + '">' + icon(saved ? 'check' : 'bookmark') + (saved ? '已加入选题' : '加入选题') + '</button>';
@@ -238,7 +227,6 @@
     $('#pageSubtitle').textContent = view.subtitle;
     $('#feedTitle').firstChild.textContent = view.feed + ' ';
     $('#features').hidden = state.view !== 'overview' || state.content!=='curated' || state.company!=='all' || state.kind!=='all';
-    $('#companyPanel').hidden=state.view!=='companies';
     $('#curationControls').hidden=state.view==='saved';
     $('#statistics').hidden = state.view === 'saved' || state.view === 'heat';
     $('.desk-layout').hidden = state.view === 'heat';
