@@ -43,6 +43,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_*.py'
           node tests/test_heat.cjs
+          node tests/test_curation.cjs
           git checkout -- site
 
       - name: Restore stored data (state branch)

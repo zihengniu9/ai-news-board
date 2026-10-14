@@ -7,10 +7,12 @@
   <title>消息台 · AI 选题看板</title>
   <link rel="stylesheet" href="editorial-v2.css">
   <link rel="stylesheet" href="heat.css">
+  <link rel="stylesheet" href="curation.css">
   <script defer src="media-data.js"></script>
   <script defer src="heat-math.js"></script>
   <script defer src="heat.js"></script>
   <script defer src="board-data.js"></script>
+  <script defer src="curation.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
@@ -32,7 +34,7 @@
       <div class="sync-bar"><div><strong id="syncStatus">读取采集记录</strong><span id="syncTime"></span></div><button class="button secondary" id="refreshButton">刷新消息</button></div>
       <section class="overview-stats" aria-label="消息统计" id="statistics"></section>
       <section id="heatPanel" hidden aria-label="媒体话题热度"></section>
-      <section class="desk-layout"><div class="desk-primary"><section class="feature-grid" id="features" aria-label="优先关注">
+      <section class="desk-layout"><div class="desk-primary"><section id="companyOverview" class="company-overview"></section><section class="feature-grid" id="features" aria-label="优先关注">
         <article class="featured">
           <div class="feature-content"><div class="feature-copy"><div class="featured-heading"><span class="label warm">限时关注</span><span class="feature-date">10.09 — 10.15 EDT</span><span class="feature-source">MLH 官方挑战</span></div><h2>Cursor Pro 活动兑换</h2><p>报名、签到、邮件收码，再到 Cursor 兑换。赠送时长与发码资格仍需核对。</p><div class="feature-bottom"><button class="button primary" data-open="cursor-mlh">查看参与条件<span data-icon="arrow-right"></span></button><span class="feature-note">活动结束与兑换期限分开核对</span></div></div><div class="feature-art" aria-hidden="true"><span class="dispatch-kicker">DISPATCH<br>BRIEF</span><strong>PRO PASS</strong><span class="dispatch-note">资格核验中</span><span class="dispatch-foot">SOURCE NOTE</span></div></div>
         </article>
@@ -42,6 +44,10 @@
           <div class="feed-heading"><h2 id="feedTitle">全部消息 <span id="resultCount"></span></h2><label class="sort-control">排序<select id="sort"><option value="priority">优先关注</option><option value="latest">最新发布</option><option value="deadline">活动截止</option></select></label><label class="search"><span data-icon="search"></span><input type="search" id="search" placeholder="搜索产品、活动或关键词" aria-label="搜索消息"><kbd>/</kbd></label></div>
           <div class="toolbar"><div class="tabs" role="tablist" aria-label="消息类型" id="tabs"></div></div>
           <div class="filter-row"><div class="filter-chips" id="categoryFilters"></div><label class="range-control"><span data-icon="filter"></span><select id="range" aria-label="时间范围"><option value="all">当前消息</option><option value="week">近 7 天发布</option><option value="month">近 30 天发布</option><option value="archive">已归档</option></select></label></div>
+          <section id="curationControls" class="curation-controls" aria-label="公司和内容筛选">
+            <div class="curation-selects"><label>公司<select id="companySelect"></select></label><label>内容<select id="signalKind"><option value="all">不限类别</option><option value="feature">新功能</option><option value="model">模型发布</option><option value="event">可参与活动</option></select></label><label>显示<select id="contentMode"><option value="curated">精选消息</option><option value="all">全部消息</option><option value="filtered">已过滤 · 可恢复</option></select></label></div>
+            <details class="filter-settings"><summary>过滤设置</summary><label class="smart-toggle"><input type="checkbox" id="smartFilter" checked> 默认只保留新功能、模型发布、可参与活动</label><p>自动识别依据标题与更新日志；不确定的消息先隐藏，可逐条恢复。手动恢复优先于自动规则和屏蔽词。关闭自动过滤后，手动隐藏和屏蔽词仍然有效。</p><form id="keywordForm"><label for="muteKeyword">屏蔽关键词</label><div class="keyword-entry"><input id="muteKeyword" maxlength="100" placeholder="例如：招聘（按标题和摘要包含匹配）"><button class="button secondary" type="submit">添加</button></div></form><div id="keywordList" class="keyword-list"></div><p id="filterSummary"></p></details>
+          </section><section id="companyPanel" hidden aria-label="公司追踪"></section>
           <div class="list-caption" id="listCaption">官方事实与选题判断分开呈现 · 点击标题查看详情</div>
           <div class="news-list" id="newsList" aria-live="polite"></div>
         </div></section></div>

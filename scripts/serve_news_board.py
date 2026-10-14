@@ -50,7 +50,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/board':return self.send_json(200,{**Store().bundle(),'refresh':STATE.copy(),'token':TOKEN})
         if path=='/api/media':return self.send_json(200,{**MediaStore().bundle(),'refresh':STATE.copy(),'token':TOKEN})
         if path=='/api/status':return self.send_json(200,{**STATE,'schedule':schedule_health()})
-        files={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/board-data.js':'board-data.js','/editorial-v2.css':'editorial-v2.css','/media-data.js':'media-data.js','/heat-math.js':'heat-math.js','/heat.js':'heat.js','/heat.css':'heat.css'}
+        files={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/board-data.js':'board-data.js','/editorial-v2.css':'editorial-v2.css','/media-data.js':'media-data.js','/heat-math.js':'heat-math.js','/heat.js':'heat.js','/heat.css':'heat.css','/curation.js':'curation.js','/curation.css':'curation.css'}
         if path not in files:return self.send_json(404,{'error':'Not found'})
         target=BOARD/files[path]
         body=target.read_bytes()

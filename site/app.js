@@ -3,6 +3,15 @@
   let items = window.BOARD_ITEMS;
   let meta = window.BOARD_META;
   let snapshot = new Date();
+  const C = window.BoardCuration;
+  const curationKey = 'ai-news-board-curation-v1';
+  let preferences = C.defaults();
+  try { preferences = C.normalize(JSON.parse(localStorage.getItem(curationKey)||'null')); } catch {}
+  function savePreferences() {
+    try { localStorage.setItem(curationKey,JSON.stringify(preferences)); }
+    catch { toast('偏好暂时无法保存；本次页面仍然有效'); }
+  }
+
   const storageKey = 'ai-news-board-design-v1';
   const stages = ['待评估', '准备写', '已发布', '暂不做'];
   const categories = ['全部', '模型更新', '编程工具', '产品更新', '开源工具', '活动福利'];
@@ -46,9 +55,10 @@
     }
   } catch { storageAvailable = false; }
   restoreSaved();
-  const state = { view: 'overview', type: 'all', category: '全部', query: '', range: 'all', sort: 'priority' };
+  const state = { view: 'overview', type: 'all', category: '全部', query: '', range: 'all', sort: 'priority', company:'all', content:'curated', kind:'all' };
   const views = {
     overview: { label:'消息总览', title:'AI 消息看板', subtitle:'产品更新与最新活动，放在一处看。', feed:'全部消息', icon:'grid' },
+    companies: { label:'公司追踪', title:'AI 公司追踪', subtitle:'关注公司的新功能、模型与可参与活动，集中查看。', feed:'相关产品与活动', icon:'globe' },
     release: { label:'产品发布', title:'产品发布', subtitle:'看看新变化，再决定值得为谁做一期。', feed:'产品更新', icon:'box' },
     event: { label:'活动福利', title:'活动与福利', subtitle:'先核对资格、权益和时间，再整理参与攻略。', feed:'活动消息', icon:'calendar' },
     heat: { label:'话题热度', title:'媒体话题热度', subtitle:'看看哪些话题被反复报道，找到值得跟进的切入点。', feed:'媒体话题', icon:'globe' },
@@ -87,7 +97,18 @@
     if(item.type==='event') return !!item.end && parseDate(item.end)<snapshot;
     return !!item.date && snapshot-parseDate(item.date)>30*86400000;
   }
-  function currentItems() { return items.filter(item=>!archived(item)); }
+  function policy(item) { return C.decision(item,preferences,snapshot.valueOf()); }
+  function companyMatches(item) {
+    const ids=C.companyIds(item);
+    return state.company==='all'||(state.company==='followed'?ids.some(id=>preferences.followed.includes(id)):ids.includes(state.company));
+  }
+  function curationMatches(item) {
+    if(state.view==='saved')return true;
+    const result=policy(item);
+    return companyMatches(item)&&(state.kind==='all'||result.kind===state.kind)&&(state.content==='all'||(state.content==='filtered'?result.hidden:!result.hidden));
+  }
+  function currentItems() { return items.filter(item=>!archived(item)&&!policy(item).hidden); }
+
   function restoreSaved() {
     for(const id of stored.selected) {
       if(items.some(item=>item.id===id)) continue;
@@ -105,6 +126,7 @@
     const query = state.query.trim().toLocaleLowerCase();
     const maxAge = state.range === 'week' ? 7 : state.range === 'month' ? 30 : Infinity;
     const result = items.filter((item) => {
+      if (!curationMatches(item)) return false;
       if(state.view!=='saved' && (state.range==='archive' ? !archived(item) : archived(item))) return false;
       if (state.view === 'saved' && !isSaved(item.id)) return false;
       if (state.type !== 'all' && item.type !== state.type) return false;
@@ -116,7 +138,7 @@
           if(age<0 || age>=maxAge) return false;
         }
       }
-      if (query && ![item.title,item.summary,item.brand,...item.tags].join(' ').toLocaleLowerCase().includes(query)) return false;
+      if (query && ![item.title,item.summary,item.brand,...item.tags,...C.companyIds(item).map(id=>C.companies.find(c=>c.id===id).name)].join(' ').toLocaleLowerCase().includes(query)) return false;
       return true;
     });
     return result.sort((a,b) => {
@@ -133,12 +155,12 @@
   }
   function renderNavigation() {
     $('#navigation').innerHTML = Object.entries(views).map(([id,view]) => {
-      const count = id === 'heat' ? (window.MEDIA_DATA?.sources || []).filter(s=>s.status==='ok').length : id === 'saved' ? stored.selected.length : id === 'overview' ? currentItems().length : currentItems().filter((item) => item.type === id).length;
+      const count = id === 'companies' ? preferences.followed.length : id === 'heat' ? (window.MEDIA_DATA?.sources || []).filter(s=>s.status==='ok').length : id === 'saved' ? stored.selected.length : id === 'overview' ? currentItems().length : currentItems().filter((item) => item.type === id).length;
       return (id === 'saved' ? '<div class="nav-divider"></div>' : '') + '<button class="nav-item' + (state.view === id ? ' active' : '') + '" data-view="' + id + '"' + (state.view === id ? ' aria-current="page"' : '') + '>' + icon(view.icon) + esc(view.label) + '<span class="nav-count">' + count + '</span></button>';
     }).join('');
   }
   function renderStatistics() {
-    const closing = new Set(items.filter((item) => item.end && parseDate(item.end) >= snapshot && (parseDate(item.end) - snapshot) <= 3 * 86400000).map(item=>item.parentUrl || item.url)).size;
+    const closing = new Set(currentItems().filter((item) => item.end && parseDate(item.end) >= snapshot && (parseDate(item.end) - snapshot) <= 3 * 86400000).map(item=>item.parentUrl || item.url)).size;
     const stats = [
       { label:'当前消息', value:currentItems().length, unit:'条', icon:'grid', kicker:'SOURCE INBOX', note:'已采集 · 等待选题筛选' },
       { label:'产品发布动态', value:currentItems().filter((item) => item.type === 'release').length, unit:'条', icon:'box', kicker:'PRODUCT LOGS', note:'产品更新与新功能' },
@@ -149,19 +171,49 @@
   }
   function renderTabs() {
     $('#tabs').innerHTML = [{id:'all',label:'全部'},{id:'release',label:'产品发布'},{id:'event',label:'活动福利'}].map((tab) => {
-      const count = items.filter((item) => (state.view==='saved' ? isSaved(item.id) : state.range==='archive' ? archived(item) : !archived(item)) && (tab.id === 'all' || item.type === tab.id)).length;
+      const count = items.filter((item) => (state.view==='saved' ? isSaved(item.id) : state.range==='archive' ? archived(item) : !archived(item)) && (tab.id === 'all' || item.type === tab.id) && curationMatches(item)).length;
       return '<button class="tab' + (state.type === tab.id ? ' active' : '') + '" role="tab" aria-selected="' + (state.type === tab.id) + '" data-type="' + tab.id + '">' + tab.label + '<span class="tab-count">' + count + '</span></button>';
     }).join('');
     $('#categoryFilters').innerHTML = categories.filter((category) => category === '全部' || state.type === 'all' || (state.type === 'event' ? category === '活动福利' : category !== '活动福利')).map((category) => '<button class="filter-chip' + (state.category === category ? ' active' : '') + '" data-category="' + esc(category) + '" aria-pressed="' + (state.category === category) + '">' + esc(category) + '</button>').join('');
+  }
+  function renderCuration() {
+    const active=items.filter(i=>!archived(i)), hidden=active.filter(i=>policy(i).hidden).length;
+    $('#companyOverview').innerHTML='<div><span class="eyebrow">COMPANY WATCH</span><h2>关注公司，少看杂讯</h2><p>已关注 '+preferences.followed.length+' 家 · 当前 '+hidden+' 条消息已过滤</p></div><button class="button secondary" data-view="companies">查看公司动态 '+icon('arrow-right')+'</button>';
+    $('#companySelect').innerHTML='<option value="all">全部公司</option><option value="followed">只看我关注的公司</option>'+C.companies.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');
+    $('#companySelect').value=state.company;
+    $('#contentMode').value=state.content;
+    $('#signalKind').value=state.kind;
+    $('#smartFilter').checked=preferences.smart;
+    $('#filterSummary').textContent='当前消息中已过滤 '+hidden+' 条；收藏和笔记保留。偏好仅保存在当前浏览器。';
+    $('#keywordList').innerHTML=preferences.keywords.map((k,i)=>'<button class="filter-chip" data-remove-keyword="'+i+'" aria-label="移除屏蔽词 '+esc(k)+'">'+esc(k)+' ×</button>').join('')||'<span class="muted">尚未设置屏蔽词</span>';
+    if(state.view!=='companies')return;
+    const now=snapshot.valueOf(), rawMedia=window.MEDIA_DATA?.articles||[];
+    const officialWeek=C.recent(items,now).filter(i=>!policy(i).hidden);
+    const mediaWeek=C.recent(rawMedia,now).filter(i=>!policy(i).hidden);
+    const sourceList=window.BOARD_SOURCES||[];
+    const ordered=[...C.companies].sort((a,b)=>Number(preferences.followed.includes(b.id))-Number(preferences.followed.includes(a.id)));
+    const cards=ordered.map(c=>{
+      const official=officialWeek.filter(i=>C.companyIds(i).includes(c.id)),media=mediaWeek.filter(i=>C.companyIds(i).includes(c.id));
+      const last=[...official,...media].sort((a,b)=>Date.parse(b.date)-Date.parse(a.date))[0];
+      const connected=sourceList.filter(s=>c.sources.includes(s.id));
+      const coverage=connected.length?connected.map(s=>s.name+'：'+(s.state||s.status||'状态待核对')+' · '+humanTime(s.checkedAt)).join('；'):'未接入独立产品源 · 仅跟踪现有报道';
+      return '<article class="company-card '+(state.company===c.id?'selected':'')+'"><div class="company-card-head"><button class="company-name" data-company="'+c.id+'">'+esc(c.name)+'</button><button class="follow-company" data-follow-company="'+c.id+'" aria-pressed="'+preferences.followed.includes(c.id)+'">'+(preferences.followed.includes(c.id)?'已关注':'关注')+'</button></div><div class="company-numbers"><span><b>'+official.length+'</b>产品 / 活动</span><span><b>'+media.length+'</b>媒体报道</span></div><p class="coverage">'+esc(coverage)+'</p><p class="company-latest">'+(last?esc(last.title):'近 7 天未采集到符合条件的消息')+'</p></article>';
+    }).join('');
+    const media=C.unique(rawMedia).filter(i=>companyMatches(i)&&(state.kind==='all'||policy(i).kind===state.kind)&&(state.content==='all'||(state.content==='filtered'?policy(i).hidden:!policy(i).hidden))).filter(i=>i.date&&Date.parse(i.date)<=now&&Date.parse(i.date)>now-7*86400000).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
+    $('#companyPanel').innerHTML='<div class="company-heading"><h2>重点公司关注表</h2><p>近 7 天 · 只统计通过过滤的已采集消息。按关注顺序展示，非热度排名；0 不代表没有发布。</p></div><div class="company-grid">'+cards+'</div><details class="company-reports" open><summary>相关媒体报道 · 近 7 天（'+media.length+' 条）</summary><p class="muted">跟随上方公司、内容和过滤筛选。报道按原文链接去重，标题关键词匹配公司；同一报道可涉及多家公司。完整媒体热度统计仍保留原始样本。</p>'+media.map(i=>'<article class="company-report">'+curationCard(i)+'<a href="'+esc(/^https:\/\//i.test(i.url)?i.url:'#')+'" target="_blank" rel="noopener noreferrer">'+esc(i.title)+' ↗</a><small>'+esc(i.brand)+' · '+esc(humanTime(i.date))+(i.stale?' · 来源本轮失败，保留旧记录':'')+'</small></article>').join('')+(!media.length?'<p>此条件下没有采集到媒体报道。可切换公司或查看已过滤消息。</p>':'')+'</details>';
   }
   function renderSaveButton(item, detail = false) {
     const saved = isSaved(item.id);
     return '<button class="' + (detail ? 'button ' + (saved ? 'secondary' : 'primary') : 'save-button' + (saved ? ' saved' : '')) + '" data-save="' + item.id + '" aria-pressed="' + saved + '" aria-label="' + (saved ? '移出选题：' : '加入选题：') + esc(item.title) + '">' + icon(saved ? 'check' : 'bookmark') + (saved ? '已加入选题' : '加入选题') + '</button>';
   }
   function stageOptions(id) { return stages.map((stage) => '<option' + ((stored.stages[id] || '待评估') === stage ? ' selected' : '') + '>' + stage + '</option>').join(''); }
+  function curationCard(item) {
+    const d=policy(item);
+    return '<div class="curation-card-line"><div class="company-tags">'+C.companyIds(item).map(id=>'<button class="company-tag" data-company="'+id+'">'+esc(C.companies.find(c=>c.id===id).name)+'</button>').join('')+(d.kind?'<span class="signal-kind">'+C.kinds[d.kind]+'</span>':'')+'</div><button class="quiet-action" data-hide-item="'+esc(item.id)+'">'+(d.hidden?'恢复保留':'隐藏这条')+'</button></div>'+(d.hidden?'<p class="filter-reason">已过滤 · '+esc(d.reason)+'</p>':'');
+  }
   function renderCard(item) {
     const status = eventStatus(item);
-    return '<article class="news-card" data-item="' + item.id + '"><div class="news-content"><div class="news-header"><div class="news-meta"><span>' + esc(item.brand) + '</span><span class="meta-dot"></span><span class="type-text">' + (item.type === 'release' ? '产品发布' : '活动福利') + '</span><span class="meta-dot"></span><span>' + esc(item.periodStart ? item.periodStart+' — '+item.periodEnd+'（日期范围）' : item.dateLabel) + '</span></div>' + renderSaveButton(item) + '</div><h3><button class="news-title" data-open="' + item.id + '">' + esc(item.title) + '</button></h3><p class="news-summary">' + esc(item.summary) + '</p><div class="news-footer"><div class="tags">' + (status ? '<span class="tag ' + status.color + '">' + esc(status.label) + '</span>' : '') + item.tags.map((tag) => '<span class="tag">' + esc(tag) + '</span>').join('') + '</div><div class="checked-line">' + esc(item.checked) + '</div></div>' + (state.view === 'saved' ? '<div class="saved-stage"><label for="stage-' + item.id + '">选题进度</label><select id="stage-' + item.id + '" data-stage="' + item.id + '">' + stageOptions(item.id) + '</select><button class="remove-topic" data-save="' + item.id + '">移出清单</button></div>' + (stored.notes[item.id] ? '<p class="saved-note">' + esc(stored.notes[item.id]) + '</p>' : '') : '') + '</div></article>';
+    return '<article class="news-card" data-item="' + item.id + '"><div class="news-content">' + curationCard(item) + '<div class="news-header"><div class="news-meta"><span>' + esc(item.brand) + '</span><span class="meta-dot"></span><span class="type-text">' + (item.type === 'release' ? '产品发布' : '活动福利') + '</span><span class="meta-dot"></span><span>' + esc(item.periodStart ? item.periodStart+' — '+item.periodEnd+'（日期范围）' : item.dateLabel) + '</span></div>' + renderSaveButton(item) + '</div><h3><button class="news-title" data-open="' + item.id + '">' + esc(item.title) + '</button></h3><p class="news-summary">' + esc(item.summary) + '</p><div class="news-footer"><div class="tags">' + (status ? '<span class="tag ' + status.color + '">' + esc(status.label) + '</span>' : '') + item.tags.map((tag) => '<span class="tag">' + esc(tag) + '</span>').join('') + '</div><div class="checked-line">' + esc(item.checked) + '</div></div>' + (state.view === 'saved' ? '<div class="saved-stage"><label for="stage-' + item.id + '">选题进度</label><select id="stage-' + item.id + '" data-stage="' + item.id + '">' + stageOptions(item.id) + '</select><button class="remove-topic" data-save="' + item.id + '">移出清单</button></div>' + (stored.notes[item.id] ? '<p class="saved-note">' + esc(stored.notes[item.id]) + '</p>' : '') : '') + '</div></article>';
   }
   function renderList() {
     const filtered = filterItems();
@@ -172,6 +224,7 @@
     else if (state.sort === 'latest') caption = '按官方发布时间排序；未记录发布时间的活动放在后面。';
     else if (state.sort === 'deadline') caption = '只对已核验精确截止时间的活动排序；日期区间与未公布时间的消息放在后面。';
     else if (state.view === 'saved') caption = '记录角度、核对条件、更新进度 · 清单仅保存在当前浏览器';
+    if(state.view!=='saved')caption=(state.content==='filtered'?'显示被规则或手动隐藏的消息，可逐条恢复。':state.content==='all'?'显示全部采集记录，包含已过滤消息。':'默认只看新功能、模型发布、可参与活动；规则判断仍需核对原文。')+' '+caption;
     $('#listCaption').textContent = caption;
     if (filtered.length) $('#newsList').innerHTML = filtered.map(renderCard).join('');
     else if (state.view === 'saved' && !stored.selected.length) $('#newsList').innerHTML = '<div class="empty-state">' + icon('bookmark') + '<h3>先留住一个值得做的选题</h3><p>在消息旁点击“加入选题”，就能在这里继续记录。</p><button class="button secondary" data-view="overview">去看消息' + icon('arrow-right') + '</button></div>';
@@ -188,16 +241,21 @@
     $('#pageTitle').innerHTML = esc(view.title) + '<span class="title-dot">.</span>';
     $('#pageSubtitle').textContent = view.subtitle;
     $('#feedTitle').firstChild.textContent = view.feed + ' ';
-    $('#features').hidden = state.view !== 'overview';
+    $('#features').hidden = state.view !== 'overview' || state.content!=='curated' || state.company!=='all' || state.kind!=='all';
+    $('#companyPanel').hidden=state.view!=='companies';
+    $('#companyOverview').hidden=state.view!=='overview';
+    $('#curationControls').hidden=state.view==='saved';
     $('#statistics').hidden = state.view === 'saved' || state.view === 'heat';
     $('.desk-layout').hidden = state.view === 'heat';
+    $('.desk-layout').classList.toggle('company-mode',state.view==='companies');
+    $('.right-rail').hidden=state.view==='companies';
     $('.sync-bar').hidden = state.view === 'heat';
     $('#heatPanel').hidden = state.view !== 'heat';
     if(state.view === 'heat') window.renderHeat?.();
     $('#sort').value = state.sort;
     $('#range').value = state.range;
     snapshot = new Date();
-    renderNavigation(); renderStatistics(); renderTabs(); renderList(); renderRail(); renderLive();
+    renderNavigation(); renderStatistics(); renderTabs(); renderList(); renderRail(); renderLive(); renderCuration();
   }
   function changeView(view, syncHash = true) {
     if (!views[view]) view = 'overview';
@@ -206,6 +264,7 @@
     state.category = '全部';
     state.query = '';
     state.range = 'all';
+    state.company='all'; state.kind='all'; state.content='curated';
     state.sort = view === 'release' ? 'latest' : view === 'event' ? 'deadline' : 'priority';
     $('#search').value = '';
     if (syncHash && location.hash !== '#' + view) history.replaceState(null,'','#' + view);
@@ -276,26 +335,52 @@
     if (!button) return;
     if (button.dataset.view) { changeView(button.dataset.view); window.scrollTo({top:0,behavior:'instant'}); }
     else if (button.dataset.type) {
-      if (state.view !== 'saved') state.view = button.dataset.type === 'all' ? 'overview' : button.dataset.type;
+      if (!['saved','companies'].includes(state.view)) state.view = button.dataset.type === 'all' ? 'overview' : button.dataset.type;
       state.type = button.dataset.type; state.category = '全部';
       if (state.view !== 'saved') history.replaceState(null,'','#' + state.view);
       render();
     }
+    else if (button.dataset.company) { state.company=button.dataset.company;state.content='curated';render(); }
+    else if (button.dataset.followCompany) {
+      const id=button.dataset.followCompany;
+      preferences.followed=preferences.followed.includes(id)?preferences.followed.filter(v=>v!==id):[...preferences.followed,id];
+      savePreferences();render();
+    }
+    else if (button.dataset.hideItem) {
+      const id=button.dataset.hideItem,item=[...items,...(window.MEDIA_DATA?.articles||[])].find(i=>i.id===id);
+      if(!item)return;
+      if(policy(item).hidden){preferences.hidden=preferences.hidden.filter(v=>v!==id);preferences.kept=[...new Set([...preferences.kept,id])];toast('已恢复保留；原时间范围不变');}
+      else {preferences.kept=preferences.kept.filter(v=>v!==id);preferences.hidden=[...new Set([...preferences.hidden,id])];toast('已隐藏，可在“已过滤”中恢复');}
+      savePreferences();render();
+    }
+    else if (button.dataset.removeKeyword!==undefined) {preferences.keywords.splice(Number(button.dataset.removeKeyword),1);savePreferences();render();}
     else if (button.dataset.category) { state.category = button.dataset.category; renderTabs(); renderList(); }
     else if (button.dataset.open) openDetail(button.dataset.open);
     else if (button.dataset.save) toggleSave(button.dataset.save);
     else if (button.dataset.close) $('#' + button.dataset.close).close();
     else if (button.dataset.copy) copyBrief(button.dataset.copy);
-    else if (button.hasAttribute('data-reset')) { state.query='';state.category='全部';state.range='all';$('#search').value='';render(); }
+    else if (button.hasAttribute('data-reset')) { state.query='';state.category='全部';state.range='all';state.company='all';state.content='curated';state.kind='all';state.type='all';$('#search').value='';render(); }
   });
   document.addEventListener('input', (event) => {
     if (event.target.id === 'search') { state.query = event.target.value; renderList(); }
     if (event.target.dataset.note) { stored.notes[event.target.dataset.note] = event.target.value; persist(); }
   });
   document.addEventListener('change', (event) => {
+    if (event.target.id === 'companySelect') { state.company=event.target.value;render(); }
+    if (event.target.id === 'contentMode') { state.content=event.target.value;render(); }
+    if (event.target.id === 'signalKind') { state.kind=event.target.value;render(); }
+    if (event.target.id === 'smartFilter') { preferences.smart=event.target.checked;savePreferences();render(); }
     if (event.target.id === 'sort') { state.sort = event.target.value; renderList(); }
     if (event.target.id === 'range') { state.range = event.target.value; renderTabs(); renderList(); }
     if (event.target.dataset.stage) { stored.stages[event.target.dataset.stage] = event.target.value; persist(); renderRail(); if (state.view === 'saved') renderList(); }
+  });
+  document.addEventListener('submit',event=>{
+    if(event.target.id!=='keywordForm')return;
+    event.preventDefault();
+    const value=$('#muteKeyword').value.trim();
+    if(!value)return;
+    if(preferences.keywords.length>=50)return toast('最多设置 50 个屏蔽词');
+    preferences.keywords=[...new Set([...preferences.keywords,value])];savePreferences();render();toast('关键词已加入过滤');
   });
   document.addEventListener('keydown', (event) => {
     if (event.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName) && !document.querySelector('dialog[open]')) { event.preventDefault(); $('#search').focus(); }
@@ -373,7 +458,7 @@
     }
 
   }
-  window.addEventListener('media-updated',()=>{renderNavigation();if(state.view==='heat')renderLive();});
+  window.addEventListener('media-updated',()=>{renderNavigation();renderCuration();if(state.view==='heat')renderLive();});
   async function readServer() {
     const response=await fetch('/api/board',{cache:'no-store'});
     if(!response.ok) throw new Error('本地服务未响应');
