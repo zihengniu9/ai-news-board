@@ -1,0 +1,38 @@
+{
+  "startedAt": "2026-10-22T05:01:18.370930+00:00",
+  "status": "completed",
+  "products": {
+    "snapshot": "2026-10-22T05:01:18+00:00",
+    "checkedDate": "2026-10-22",
+    "mode": "collected",
+    "timezone": "Asia/Singapore",
+    "scheduled": true,
+    "schedule": {
+      "enabled": true,
+      "staleAfterHours": 8,
+      "stale": true,
+      "hoursSinceSuccess": 8.789507835277778,
+      "lastSuccess": "2026-10-21T20:13:59.627124+00:00",
+      "lastRun": {
+        "status": "failed",
+        "finishedAt": "2026-10-21T23:27:19.262052+00:00",
+        "error": "RuntimeError: 产品采集遇到瞬态故障，重试仍失败；本轮停止，不继续媒体网络采集"
+      },
+      "backup": null
+    },
+    "sourceSuccess": 8,
+    "sourceTotal": 9,
+    "networkHalted": false
+  },
+  "media": {
+    "success": 5,
+    "total": 6
+  },
+  "backup": {
+    "status": "completed",
+    "folder": "/tmp/board-backups/20261022",
+    "files": 2,
+    "removed": []
+  },
+  "finishedAt": "2026-10-22T05:01:25.621852+00:00"
+}
