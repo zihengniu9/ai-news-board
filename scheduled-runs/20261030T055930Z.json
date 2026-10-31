@@ -1,0 +1,38 @@
+{
+  "startedAt": "2026-10-30T05:59:24.370962+00:00",
+  "status": "completed",
+  "products": {
+    "snapshot": "2026-10-30T05:59:24+00:00",
+    "checkedDate": "2026-10-30",
+    "mode": "collected",
+    "timezone": "Asia/Singapore",
+    "scheduled": true,
+    "schedule": {
+      "enabled": true,
+      "staleAfterHours": 8,
+      "stale": true,
+      "hoursSinceSuccess": 8.7692704,
+      "lastSuccess": "2026-10-29T21:13:18.295829+00:00",
+      "lastRun": {
+        "status": "completed",
+        "finishedAt": "2026-10-29T21:13:18.295829+00:00",
+        "error": null
+      },
+      "backup": null
+    },
+    "sourceSuccess": 8,
+    "sourceTotal": 9,
+    "networkHalted": false
+  },
+  "media": {
+    "success": 5,
+    "total": 6
+  },
+  "backup": {
+    "status": "completed",
+    "folder": "/tmp/board-backups/20261030",
+    "files": 2,
+    "removed": []
+  },
+  "finishedAt": "2026-10-30T05:59:30.917763+00:00"
+}
