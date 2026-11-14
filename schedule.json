@@ -1,0 +1,1 @@
+{"enabled": true, "intervalHours": 4, "runner": "github-actions", "timezone": "Asia/Singapore"}
